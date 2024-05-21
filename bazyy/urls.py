@@ -14,9 +14,34 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from klub_100kg.views import *
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="User API",
+      default_version='v1',
+      description="API for CRUD operations on users",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@yourapi.com"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/users/post', CreateUserAPIView.as_view(), name='api_create_user'),
+    path('api/users/get/<int:user_id>/', GetUserAPIView.as_view(), name='api_get_user'),
+    path('api/reservation/post', AddReservationAPIView.as_view(), name='api_add_reservation'),
+    path('api/reservation/get/<int:reservation_id>/', GetReservationAPIView.as_view(), name='get_reservation'),
+    path('api/reservation/modify/<int:reservation_id>/', ModifyReservationAPIView.as_view(), name='api_modify_reservation'),
+    path('api/check_gym_availability/', CheckGymAvailabilityAPIView.as_view(), name='api_check_gym_availability'),
+    path('api/check_trainer_availability/', CheckTrainerAvailabilityAPIView.as_view(), name='api_check_trainer_availability'),
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
