@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block content %}
+<link rel="stylesheet" href="../static/styles/main.css" />
+<section class="section">
+  <div class="container">
+      <h2>Rezerwacja</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Zarezerwuj</button>
+      </form>
+  </div>
+</section>
+
+{% endblock %}

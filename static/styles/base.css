@@ -1,0 +1,7 @@
+.navbar {
+  background-color: #f7f7f7;
+  box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1);
+}
+.navbar-item img {
+  max-height: 3rem;
+}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html style="height: 100%">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="../static/styles/base.css" />
+  </head>
+  <body style="display: flex; flex-direction: column; min-height: 100%">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+          <i class="fas fa-home"></i>
+        </a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navbarBasicExample" class="navbar-menu">
+
+        <div class="navbar-end">
+          <div class="navbar-item" href="/logout">
+            <form method="POST" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="button is-danger">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main style="flex: 1">{% block content %} {% endblock %}</main>
+
+    <footer class="footer" style="padding: 1rem 1.5rem">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Autorzy</strong>
+          <a href="https://github.com/Davsooonowy">Dawid Mularczyk</a>,
+          <a href="https://github.com/HadesXBloodFire">Maciej Wilewski</a>. 2024
+        </p>
+      </div>
+    </footer>
+    <script src="../static/scripts/base.js"></script>
+  </body>
+</html>
