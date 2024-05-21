@@ -46,54 +46,6 @@ class GetUserAPIView(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-
-class AddTrainerAPIView(APIView):
-    serializer_class = TrainerSerializer
-
-    @swagger_auto_schema(request_body=TrainerSerializer)
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            with connection.cursor() as cursor:
-                try:
-                    cursor.callproc("CALL add_trainer(%s, %s, %s, %s, %s)", [
-                        data['first_name'],
-                        data['last_name'],
-                        data['hourly_cost'],
-                        data['specialization'],
-                        data['description']
-                    ])
-                    return Response({'message': 'Trainer added successfully'}, status=status.HTTP_201_CREATED)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AddGymAPIView(APIView):
-    serializer_class = GymSerializer
-
-    @swagger_auto_schema(request_body=GymSerializer)
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            with connection.cursor() as cursor:
-                try:
-                    cursor.callproc("CALL add_gym(%s, %s, %s, %s)", [
-                        data['name'],
-                        data['phone_number'],
-                        data['address'],
-                        data['limit']
-                    ])
-                    return Response({'message': 'Gym added successfully'}, status=status.HTTP_201_CREATED)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class AddReservationAPIView(APIView):
     serializer_class = ReservationSerializer
 
@@ -123,6 +75,7 @@ class AddReservationAPIView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GetReservationAPIView(APIView):
     def get(self, request, reservation_id, *args, **kwargs):
@@ -184,6 +137,8 @@ class CheckGymAvailabilityAPIView(APIView):
                 result = cursor.fetchone()
                 return Response({'available': result[0]})
         return Response({'error': 'Missing gym_ID or date parameter'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class CheckTrainerAvailabilityAPIView(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('trainer_ID', openapi.IN_QUERY, description="Trainer ID", type=openapi.TYPE_INTEGER),
@@ -198,3 +153,63 @@ class CheckTrainerAvailabilityAPIView(APIView):
                 result = cursor.fetchone()
                 return Response({'available': result[0]})
         return Response({'error': 'Missing trainer_ID or date parameter'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetGymAPIView(APIView):
+    def get(self, request, gym_id):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM gyms WHERE gym_ID = %s", [gym_id])
+            row = cursor.fetchone()
+            if row:
+                columns = [col[0] for col in cursor.description]
+                gym_data = dict(zip(columns, row))
+                return Response(gym_data)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class AddGymAPIView(APIView):
+    serializer_class = GymSerializer
+
+    @swagger_auto_schema(request_body=GymSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute("CALL add_gym(%s, %s, %s, %s)", [
+                        data['name'],
+                        data['phone_number'],
+                        data['address'],
+                        data['limit']
+                    ])
+                    return Response({'message': 'Gym added successfully'}, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddTrainerAPIView(APIView):
+    serializer_class = TrainerSerializer
+
+    @swagger_auto_schema(request_body=TrainerSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute("CALL add_trainer(%s, %s, %s, %s, %s)", [
+                        data['first_name'],
+                        data['last_name'],
+                        data['hourly_cost'],
+                        data['specialization'],
+                        data['description']
+                    ])
+                    return Response({'message': 'Trainer added successfully'}, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
