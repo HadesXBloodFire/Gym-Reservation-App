@@ -34,13 +34,16 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('api/users/post', CreateUserAPIView.as_view(), name='api_create_user'),
-    path('api/users/get/<int:user_id>/', GetUserAPIView.as_view(), name='api_get_user'),
-    path('api/reservation/post', AddReservationAPIView.as_view(), name='api_add_reservation'),
-    path('api/reservation/get/<int:reservation_id>/', GetReservationAPIView.as_view(), name='get_reservation'),
-    path('api/reservation/modify/<int:reservation_id>/', ModifyReservationAPIView.as_view(), name='api_modify_reservation'),
-    path('api/check_gym_availability/', CheckGymAvailabilityAPIView.as_view(), name='api_check_gym_availability'),
-    path('api/check_trainer_availability/', CheckTrainerAvailabilityAPIView.as_view(), name='api_check_trainer_availability'),
+    path('api/users/add_user/', CreateUserAPIView.as_view(), name='api_create_user'),
+    path('api/users/get_user/<int:user_id>/', GetUserAPIView.as_view(), name='api_get_user'),
+    path('api/reservation/add_reservation/', AddReservationAPIView.as_view(), name='api_add_reservation'),
+    path('api/reservation/get_reservation/<int:reservation_id>/', GetReservationAPIView.as_view(), name='get_reservation'),
+    path('api/reservation/modify_reservation/<int:reservation_id>/', ModifyReservationAPIView.as_view(), name='api_modify_reservation'),
+    path('api/gym/check_gym_availability/', CheckGymAvailabilityAPIView.as_view(), name='api_check_gym_availability'),
+    path('api/gym/get_gym/<int:gym_id>/', GetGymAPIView.as_view(), name='api_get_gym'),
+    path('api/gym/add_gym/', AddGymAPIView.as_view(), name='api_add_gym'),
+    path('api/trainer/check_trainer_availability/', CheckTrainerAvailabilityAPIView.as_view(), name='api_check_trainer_availability'),
+    path('api/trainer/add_trainer/', AddTrainerAPIView.as_view(), name='api_add_trainer'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
