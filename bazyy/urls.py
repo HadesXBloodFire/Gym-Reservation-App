@@ -22,11 +22,11 @@ from klub_100kg.views import *
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="User API",
+      title="API for Gym Reservation System",
       default_version='v1',
-      description="API for CRUD operations on users",
+      description="API for CRUD operations",
       terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@yourapi.com"),
+      contact=openapi.Contact(email="dawid.mularczyk@onet.pl"),
       license=openapi.License(name="BSD License"),
    ),
    public=True,
