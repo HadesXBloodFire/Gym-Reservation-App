@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="en" style="height: 100%; margin: 0; padding: 0; box-sizing: border-box; overflow: hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Klub 100 Kg</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .button.is-primary {
+        background-color: #add8e6;
+        border-radius: 20px;
+      }
+      .button.is-link {
+        background-color: #ffffff;
+        color: #000000;
+        border-radius: 20px;
+      }
+      h1 {
+        color: #808080;
+        font-size: 2.5rem;
+      }
+      h2 {
+        color: #d3d3d3;
+        font-size: 1.5rem;
+      }
+      .image img {
+        border: 5px solid #fff;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="hero is-fullheight" style="background-color: #ffffff; height: 100vh">
+      <div class="hero-body">
+        <div class="container">
+          <div class="columns is-vcentered">
+            <div class="column is-6">
+              <h1 class="title">Klub 100 Kg</h1>
+              <h2 class="subtitle">Zaloguj się lub zarejestruj, aby korzystać z naszych usług.</h2>
+              <div class="buttons">
+                <a class="button is-primary" href="/login">Zaloguj się</a>
+                <a class="button is-link" href="/signup">Dołącz do nas</a>
+              </div>
+            </div>
+            <div class="column is-6">
+              <figure class="image is-512x512">
+                <img src="{% static 'images/hero.png' %}" alt="Man working out" />
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <footer class="footer" style="padding: 1rem 1.5rem">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Authors</strong>
+          <a href="https://github.com/Davsooonowy">Dawid Mularczyk</a>,
+          <a href="https://github.com/HadesXBloodFire2024">Maciej Wilewski</a>. 2024
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
