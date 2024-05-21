@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "bazyy"
+version = "0.1.0"
+description = ""
+authors = ["Dawid Mularczyk <muldaw@student.agh.edu.pl>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.0.6"
+black = "^24.4.2"
+flake8 = "^7.0.0"
+psycopg2 = "^2.9.9"
+psycopg2-binary = "^2.9.9"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
