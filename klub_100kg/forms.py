@@ -21,14 +21,26 @@ def get_trainers():
     with connection.cursor() as cursor:
         cursor.execute("SELECT trainer_ID, first_name FROM trainers")
         trainers = cursor.fetchall()
-        trainers.insert(0, (None, 'Bez trenera'))  # Add an option for 'No trainer'
+        trainers.insert(0, (0, 'Bez trenera'))
         return trainers
 
 class ReservationForm(forms.Form):
-    user_ID = forms.IntegerField(widget=forms.HiddenInput())  # This will be set in the view
+    user_ID = forms.IntegerField(widget=forms.HiddenInput())
     gym_ID = forms.ChoiceField(choices=get_gyms, label="Wybierz siłownię:")
     trainer_ID = forms.ChoiceField(choices=get_trainers, required=False, label="Wybierz trenera:")
     date = forms.DateTimeField(
         input_formats=['%Y-%m-%dT%H:%M:%S.%fZ'],
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'})
     )
+
+    def clean_trainer_ID(self):
+        trainer_id = self.cleaned_data.get('trainer_ID')
+        return 0 if trainer_id == '0' else trainer_id
+
+class ModifyReservationForm(forms.Form):
+    reservation_id = forms.IntegerField(widget=forms.HiddenInput())
+    trainer_ID = forms.ChoiceField(choices=[], required=False, label="Wybierz trenera:")
+
+    def __init__(self, *args, **kwargs):
+        super(ModifyReservationForm, self).__init__(*args, **kwargs)
+        self.fields['trainer_ID'].choices = get_trainers()
