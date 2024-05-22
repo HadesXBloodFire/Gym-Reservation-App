@@ -39,29 +39,12 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
-# @anonymous_required
-# def register_view(request):
-#     if request.method == 'POST':
-#         form = RegisterForm(request.POST)
-#         if form.is_valid():
-#             first_name = form.cleaned_data['first_name']
-#             last_name = form.cleaned_data['last_name']
-#             mail = form.cleaned_data['mail']
-#             phone_number = form.cleaned_data['phone_number']
-#             password = form.cleaned_data['password']
-#             with connection.cursor() as cursor:
-#                 cursor.execute("CALL add_user(%s, %s, %s, %s, %s)", [first_name, last_name, mail, phone_number, password])
-#             return redirect('login')
-#     else:
-#         form = RegisterForm()
-#     return render(request, 'register.html', {'form': form})
 
 @anonymous_required
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            # Prepare data for the API request
             data = {
                 'first_name': form.cleaned_data['first_name'],
                 'last_name': form.cleaned_data['last_name'],
@@ -69,15 +52,11 @@ def register_view(request):
                 'phone_number': form.cleaned_data['phone_number'],
                 'password': form.cleaned_data['password'],
             }
-            # Get the full URL for the API endpoint
             api_url = request.build_absolute_uri(reverse('api_create_user'))
-            # Make the API request
             response = requests.post(api_url, json=data)
-            # Check the response status code
             if response.status_code == 201:
                 return redirect('login')
             else:
-                # Handle error (you can customize this part to suit your needs)
                 print(f"API request failed with status code {response.status_code}")
     else:
         form = RegisterForm()
@@ -85,7 +64,7 @@ def register_view(request):
 
 def logout_view(request):
     response = redirect('login')
-    response.delete_cookie('user_id')  # Delete the user_id cookie
+    response.delete_cookie('user_id')
     return response
 
 
@@ -100,31 +79,81 @@ def hero_page(request):
 def main_page(request):
     user_id = request.COOKIES.get('user_id')
     if user_id is None:
-        # User is not logged in, redirect to login page
+        return redirect('login')
+    return render(request, "main.html")
+
+def new_reservation_view(request):
+    user_id = request.COOKIES.get('user_id')
+    if user_id is None:
         return redirect('login')
     else:
-        # User is logged in, render the main page
         if request.method == 'POST':
             form = ReservationForm(request.POST)
             if form.is_valid():
-                # Prepare data for the API request
                 data = {
                     'user_ID': form.cleaned_data['user_ID'],
                     'gym_ID': form.cleaned_data['gym_ID'],
                     'trainer_ID': form.cleaned_data['trainer_ID'],
                     'date': form.cleaned_data['date'].strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                 }
-                # Get the full URL for the API endpoint
                 api_url = request.build_absolute_uri(reverse('api_add_reservation'))
-                # Make the API request
                 response = requests.post(api_url, json=data)
-                # Check the response status code
                 if response.status_code != 201:
-                    # Handle error (you can customize this part to suit your needs)
                     print(f"API request failed with status code {response.status_code}")
         else:
             form = ReservationForm(initial={'user_ID': user_id})
-        return render(request, "main.html", {'form': form})
+        return render(request, "new_reservation.html", {'form': form})
+
+
+def modify_reservation_view(request):
+    user_id = request.COOKIES.get('user_id')
+    if user_id is None:
+        return redirect('login')
+
+    # Fetch gym names using SQL query
+    reservations_with_gym_names = {}
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT r.reservation_ID, g.name AS gym_name
+            FROM reservations r
+            INNER JOIN gyms g ON r.gym_ID = g.gym_ID
+            WHERE r.user_ID = %s AND r.status = 'A'
+        """, [user_id])
+        for row in cursor.fetchall():
+            reservation_id, gym_name = row
+            reservations_with_gym_names[reservation_id] = gym_name
+
+    # Fetch active reservations for the logged-in user using API
+    api_url = request.build_absolute_uri(reverse('get_reservations', args=[user_id]))
+    response = requests.get(api_url)
+    reservations = []
+    if response.status_code == 200:
+        for res in response.json():
+            if res['status'] == 'A':
+                # Update each reservation with the gym name
+                res['gym_name'] = reservations_with_gym_names.get(res['reservation_id'], 'Unknown Gym')
+                reservations.append(res)
+    else:
+        print(f"API request failed with status code {response.status_code}")
+
+    if request.method == 'POST':
+        form = ModifyReservationForm(request.POST)
+        if form.is_valid():
+            reservation_id = form.cleaned_data['reservation_id']
+            trainer_ID = form.cleaned_data['trainer_ID']
+            action = 'cancel' if 'cancel' in request.POST else 'update'
+            data = {'trainer_ID': trainer_ID} if action == 'update' else {'status': 'C'}
+            api_url = request.build_absolute_uri(reverse('api_modify_reservation', args=[reservation_id]))
+            requests.put(api_url, json=data)
+            # Redirect to refresh the page and show updated reservations
+            return redirect('modify_reservation')
+    else:
+        form = ModifyReservationForm()
+
+    # Ensure the form is initialized with the current trainer choices
+    form.fields['trainer_ID'].choices = get_trainers()
+
+    return render(request, "modify_reservation.html", {'active_reservations': reservations, 'form': form})
 
 
 class CreateUserAPIView(APIView):
@@ -332,3 +361,31 @@ class AddTrainerAPIView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetReservationsAPIView(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM reservations WHERE user_ID = %s", [user_id])
+            rows = cursor.fetchall()
+            if rows:
+                columns = [col[0] for col in cursor.description]
+                reservations_data = [dict(zip(columns, row)) for row in rows]
+                return Response(reservations_data)
+            else:
+                return Response({'error': 'No reservations found for this user'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GetGymsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM gyms")
+            rows = cursor.fetchall()
+            if rows:
+                columns = [col[0] for col in cursor.description]
+                gyms_data = [dict(zip(columns, row)) for row in rows]
+                return Response(gyms_data)
+            else:
+                return Response({'error': 'No gyms found'}, status=status.HTTP_404_NOT_FOUND)
+
+

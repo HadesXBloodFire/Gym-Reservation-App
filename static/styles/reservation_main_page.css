@@ -1,0 +1,42 @@
+html,
+body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.card {
+  transition: transform 0.2s;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+}
+.card:hover {
+  transform: scale(1.05);
+}
+.card-image img {
+  transition: opacity 0.2s;
+}
+.card:hover .card-image img {
+  opacity: 0.9;
+}
+.card-content {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.9));
+}
+.column {
+  display: flex;
+  justify-content: center;
+}
+.section {
+  flex: 1;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+.columns {
+  justify-content: center;
+}
