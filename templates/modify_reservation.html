@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
 <link rel="stylesheet" href="../static/styles/main.css" />
+<style>
+  .short-select {
+    width: 70px;
+    display: inline-block;
+  }
+  .inline-button {
+    display: inline-block;
+    margin-left: 10px;
+  }
+</style>
 <section class="section">
   <div class="container">
     <table class="table is-fullwidth is-striped is-hoverable">
@@ -8,7 +18,8 @@
         <tr>
           <th>Gym</th>
           <th>Trainer</th>
-          <th>Actions</th>
+          <th>Date and Time</th>
+          <th>Add/Change Trainer</th>
         </tr>
       </thead>
       <tbody>
@@ -16,21 +27,20 @@
         <tr>
           <td>{{ reservation.gym_name }}</td>
           <td>{{ reservation.trainer_id }}</td>
-          <td>
-            <div class="select is-fullwidth">
-              <select name="trainer_ID">
-                {% for trainer_id, trainer_name in trainer_choices %}
-                <option value="{{ trainer_id }}" {% if trainer_id == reservation.trainer_ID %}selected{% endif %}>{{ trainer_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </td>
+          <td>{{ reservation.date }}</td>
           <td>
             <form method="post">
               {% csrf_token %}
               <input type="hidden" name="reservation_id" value="{{ reservation.reservation_ID }}">
-              <button class="button is-link" type="submit" name="update">Update</button>
-              <button class="button is-danger" type="submit" name="cancel">Cancel Reservation</button>
+              <div class="select is-fullwidth short-select">
+                <select name="trainer_ID">
+                  {% for trainer_id, trainer_name in form.trainer_ID.field.choices %}
+                  <option value="{{ trainer_id }}" {% if trainer_id == reservation.trainer_ID %}selected{% endif %}>{{ trainer_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button class="button is-link inline-button" type="submit" name="update">Update</button>
+              <button class="button is-danger inline-button" type="submit" name="cancel">Cancel Reservation</button>
             </form>
           </td>
         </tr>
