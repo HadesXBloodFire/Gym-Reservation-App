@@ -41,6 +41,11 @@ class ModifyReservationForm(forms.Form):
     reservation_id = forms.IntegerField(widget=forms.HiddenInput())
     trainer_ID = forms.ChoiceField(choices=[], required=False, label="Wybierz trenera:")
 
+    def clean_trainer_ID(self):
+        trainer_id = self.cleaned_data.get('trainer_ID')
+        return 0 if trainer_id == '0' else trainer_id
+
     def __init__(self, *args, **kwargs):
         super(ModifyReservationForm, self).__init__(*args, **kwargs)
         self.fields['trainer_ID'].choices = get_trainers()
+
