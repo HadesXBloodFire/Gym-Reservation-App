@@ -11,6 +11,9 @@ import json
 import requests
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+
 
 def anonymous_required(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -183,8 +186,6 @@ def update_trainer_reservation_view(request, reservation_id):
     return redirect('modify_reservation')
 
 
-from django.http import JsonResponse
-
 @csrf_exempt
 def cancel_reservation_view(request, reservation_id):
     if request.method == 'POST':
@@ -268,24 +269,29 @@ class UpdateTrainerReservationAPIView(APIView):
             current_data = dict(zip(columns, row))
 
         update_data = request.data.copy()
-        if update_data.get('trainer_ID') == 0:
-            update_data['trainer_ID'] = None
-
-        serializer = self.serializer_class(data={**current_data, 'trainer_ID': update_data['trainer_ID'], **update_data}, partial=True)
-        if serializer.is_valid():
-            data = serializer.validated_data
+        if update_data.get('trainer_ID') == '0':
             with connection.cursor() as cursor:
                 try:
-                    cursor.execute("CALL modify_reservation(%s, %s, %s)", [
-                        reservation_id,
-                        data['trainer_ID'],
-                        current_data['status']
-                    ])
-                    return Response({'message': 'Reservation modified successfully'}, status=status.HTTP_200_OK)
+                    cursor.execute("CALL delete_trainer_from_reservation(%s)", [reservation_id])
+                    return Response({'message': 'Trainer deleted successfully from the reservation.'}, status=status.HTTP_200_OK)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer = self.serializer_class(data={**current_data, **update_data}, partial=True)
+            if serializer.is_valid():
+                data = serializer.validated_data
+                with connection.cursor() as cursor:
+                    try:
+                        cursor.execute("CALL modify_reservation(%s, %s, %s)", [
+                            reservation_id,
+                            data['trainer_ID'],
+                            current_data['status']
+                        ])
+                        return Response({'message': 'Reservation modified successfully'}, status=status.HTTP_200_OK)
+                    except Exception as e:
+                        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CancelReservationAPIView(APIView):
