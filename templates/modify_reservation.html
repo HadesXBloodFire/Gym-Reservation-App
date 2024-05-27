@@ -29,9 +29,9 @@
           <td>{{ reservation.trainer_id }}</td>
           <td>{{ reservation.date }}</td>
           <td>
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="reservation_id" value="{{ reservation.reservation_ID }}">
+            <form method="post" action="{% url 'update_trainer_reservation' reservation.reservation_id %}">
+                {% csrf_token %}
+                <input type="hidden" name="reservation_id" value="{{ reservation.reservation_id }}">
               <div class="select is-fullwidth short-select">
                 <select name="trainer_ID">
                   {% for trainer_id, trainer_name in form.trainer_ID.field.choices %}
@@ -40,6 +40,10 @@
                 </select>
               </div>
               <button class="button is-link inline-button" type="submit" name="update">Update</button>
+            </form>
+            <form method="post" action="{% url 'cancel_reservation' reservation.reservation_id %}">
+              {% csrf_token %}
+              <input type="hidden" name="reservation_id" value="{{ reservation.reservation_id }}">
               <button class="button is-danger inline-button" type="submit" name="cancel">Cancel Reservation</button>
             </form>
           </td>

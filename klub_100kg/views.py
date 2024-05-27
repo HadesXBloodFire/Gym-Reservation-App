@@ -9,6 +9,7 @@ from .forms import *
 import bcrypt
 import requests
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 def anonymous_required(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -156,6 +157,77 @@ def new_reservation_view(request):
 #
 #     return render(request, "modify_reservation.html", {'active_reservations': reservations, 'form': form})
 
+# def modify_reservation_view(request):
+#     user_id = request.COOKIES.get('user_id')
+#     if user_id is None:
+#         return redirect('login')
+#
+#     # Fetch gym names using SQL query
+#     reservations_with_gym_names = {}
+#     with connection.cursor() as cursor:
+#         cursor.execute("""
+#             SELECT r.reservation_ID, g.name AS gym_name
+#             FROM reservations r
+#             INNER JOIN gyms g ON r.gym_ID = g.gym_ID
+#             WHERE r.user_ID = %s AND r.status = 'A'
+#         """, [user_id])
+#         for row in cursor.fetchall():
+#             reservation_id, gym_name = row
+#             reservations_with_gym_names[reservation_id] = gym_name
+#
+#     # Fetch active reservations for the logged-in user using API
+#     api_url = request.build_absolute_uri(reverse('get_reservations', args=[user_id]))
+#     response = requests.get(api_url)
+#     reservations = []
+#     if response.status_code == 200:
+#         for res in response.json():
+#             if res['status'] == 'A':
+#                 # Update each reservation with the gym name
+#                 res['gym_name'] = reservations_with_gym_names.get(res['reservation_id'], 'Unknown Gym')
+#                 reservations.append(res)
+#     else:
+#         print(f"API request failed with status code {response.status_code}")
+#
+#     if request.method == 'PUT':
+#         reservation_id = request.POST.get('reservation_id')
+#         trainer_ID = request.POST.get('trainer_ID')
+#         action = 'cancel' if 'cancel' in request.POST else 'update'
+#
+#         # Fetch current reservation data
+#         api_url_get = request.build_absolute_uri(reverse('api_get_reservation', args=[reservation_id]))
+#         response_get = requests.get(api_url_get)
+#         if response_get.status_code == 200:
+#             current_data = response_get.json()
+#         else:
+#             print(f"API GET request failed with status code {response_get.status_code}")
+#             return render(request, "modify_reservation.html", {'active_reservations': reservations, 'form': form})
+#
+#         # Prepare data for PUT request
+#         data = current_data
+#         if action == 'update':
+#             data['trainer_ID'] = trainer_ID
+#         else:
+#             data['status'] = 'C'
+#
+#         # Send PUT request
+#         api_url_put = request.build_absolute_uri(reverse('api_modify_reservation', args=[reservation_id]))
+#         response_put = requests.put(api_url_put, json=data)
+#         if response_put.status_code == 200:
+#             # Redirect to refresh the page and show updated reservations
+#             return redirect('modify_reservation')
+#         else:
+#             print(f"API PUT request failed with status code {response_put.status_code}")
+#
+#     else:
+#         form = ModifyReservationForm()
+#
+#     # Ensure the form is initialized with the current trainer choices
+#     form.fields['trainer_ID'].choices = get_trainers()
+#
+#     return render(request, "modify_reservation.html", {'active_reservations': reservations, 'form': form})
+#
+
+
 def modify_reservation_view(request):
     user_id = request.COOKIES.get('user_id')
     if user_id is None:
@@ -187,29 +259,12 @@ def modify_reservation_view(request):
     else:
         print(f"API request failed with status code {response.status_code}")
 
-    if request.method == 'POST':
-        form = ModifyReservationForm(request.POST)
-        if form.is_valid():
-            reservation_id = form.cleaned_data['reservation_id']
-            trainer_ID = form.cleaned_data['trainer_ID']
-            action = 'cancel' if 'cancel' in request.POST else 'update'
-            data = {'trainer_ID': trainer_ID} if action == 'update' else {'status': 'C'}
-            api_url = request.build_absolute_uri(reverse('api_modify_reservation', args=[reservation_id]))
-            response = requests.put(api_url, json=data)
-            if response.status_code == 200:
-                # Redirect to refresh the page and show updated reservations
-                return redirect('modify_reservation')
-            else:
-                print(f"API request failed with status code {response.status_code}")
-    else:
-        form = ModifyReservationForm()
+    form = ModifyReservationForm()
 
     # Ensure the form is initialized with the current trainer choices
     form.fields['trainer_ID'].choices = get_trainers()
 
     return render(request, "modify_reservation.html", {'active_reservations': reservations, 'form': form})
-
-
 class CreateUserAPIView(APIView):
     serializer_class = UserSerializer
 
@@ -232,6 +287,47 @@ class CreateUserAPIView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# @csrf_exempt
+# def update_trainer_reservation_view(request, reservation_id):
+#     if request.method == 'POST':
+#         trainer_id = request.POST.get('trainer_ID')
+#         if trainer_id is None:
+#             trainer_id = 0  # Use 0 to represent "no trainer"
+#         api_url = request.build_absolute_uri(reverse('api_update_trainer_reservation', args=[reservation_id]))
+#         data = {'trainer_ID': trainer_id}
+#         response = requests.put(api_url, json=data)
+#         if response.status_code == 200:
+#             return redirect('modify_reservation')
+#         else:
+#             print(f"API request failed with status code {response.status_code}")
+#     return redirect('modify_reservation')
+@csrf_exempt
+def update_trainer_reservation_view(request, reservation_id):
+    if request.method == 'POST':
+        trainer_id = request.POST.get('trainer_ID')
+        if trainer_id == 'None':  # Check if the trainer is given as none
+            trainer_id = 0  # Convert it to 0
+        api_url = request.build_absolute_uri(reverse('api_update_trainer_reservation', args=[reservation_id]))
+        data = {'trainer_ID': trainer_id}
+        response = requests.put(api_url, json=data)
+        if response.status_code == 200:
+            return redirect('modify_reservation')
+        else:
+            print(f"API request failed with status code {response.status_code}")
+    return redirect('modify_reservation')
+@csrf_exempt
+def cancel_reservation_view(request, reservation_id):
+    if request.method == 'POST':
+        api_url = request.build_absolute_uri(reverse('api_cancel_reservation', args=[reservation_id]))
+        data = {'status': 'C'}  # Specify that you want to change the status to 'C'
+        response = requests.put(api_url, json=data)
+        if response.status_code == 200:
+            return redirect('modify_reservation')
+        else:
+            print(f"API request failed with status code {response.status_code}")
+    return redirect('modify_reservation')
 
 
 class GetUserAPIView(APIView):
@@ -292,7 +388,42 @@ class GetReservationAPIView(APIView):
                 return Response({'error': 'Reservation not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class ModifyReservationAPIView(APIView):
+# class ModifyReservationAPIView(APIView):
+#     serializer_class = UpdateReservationSerializer
+#
+#     @swagger_auto_schema(request_body=UpdateReservationSerializer)
+#     def put(self, request, reservation_id, *args, **kwargs):
+#         with connection.cursor() as cursor:
+#             cursor.execute("SELECT * FROM reservations WHERE reservation_id = %s", [reservation_id])
+#             row = cursor.fetchone()
+#             if not row:
+#                 return Response({'error': 'Reservation not found'}, status=status.HTTP_404_NOT_FOUND)
+#             columns = [col[0] for col in cursor.description]
+#             current_data = dict(zip(columns, row))
+#
+#         update_data = request.data.copy()
+#         if update_data.get('trainer_ID') == 0:
+#             update_data['trainer_ID'] = None
+#         # trainer_id_to_update = update_data.get('trainer_ID', current_data.get('trainer_id'))
+#
+#         serializer = self.serializer_class(data={**current_data, 'trainer_ID': update_data['trainer_ID'], **update_data}, partial=True)
+#         if serializer.is_valid():
+#             data = serializer.validated_data
+#             with connection.cursor() as cursor:
+#                 try:
+#                     cursor.execute("CALL modify_reservation(%s, %s, %s)", [
+#                         reservation_id,
+#                         # trainer_id_to_update,
+#                         data['trainer_ID'],
+#                         data.get('status', current_data['status'])
+#                     ])
+#                     return Response({'message': 'Reservation modified successfully'}, status=status.HTTP_200_OK)
+#                 except Exception as e:
+#                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateTrainerReservationAPIView(APIView):
     serializer_class = UpdateReservationSerializer
 
     @swagger_auto_schema(request_body=UpdateReservationSerializer)
@@ -305,22 +436,51 @@ class ModifyReservationAPIView(APIView):
             columns = [col[0] for col in cursor.description]
             current_data = dict(zip(columns, row))
 
-        update_data = request.data
+        update_data = request.data.copy()
         if update_data.get('trainer_ID') == 0:
             update_data['trainer_ID'] = None
-        trainer_id_to_update = update_data.get('trainer_ID', current_data.get('trainer_id'))
 
-        serializer = self.serializer_class(data={**current_data, 'trainer_ID': trainer_id_to_update, **update_data}, partial=True)
+        serializer = self.serializer_class(data={**current_data, 'trainer_ID': update_data['trainer_ID'], **update_data}, partial=True)
         if serializer.is_valid():
             data = serializer.validated_data
             with connection.cursor() as cursor:
                 try:
                     cursor.execute("CALL modify_reservation(%s, %s, %s)", [
                         reservation_id,
-                        trainer_id_to_update,
-                        data.get('status', current_data['status'])
+                        data['trainer_ID'],
+                        current_data['status']
                     ])
                     return Response({'message': 'Reservation modified successfully'}, status=status.HTTP_200_OK)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CancelReservationAPIView(APIView):
+    serializer_class = UpdateReservationSerializer
+
+    @swagger_auto_schema(request_body=UpdateReservationSerializer)
+    def put(self, request, reservation_id, *args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM reservations WHERE reservation_id = %s", [reservation_id])
+            row = cursor.fetchone()
+            if not row:
+                return Response({'error': 'Reservation not found'}, status=status.HTTP_404_NOT_FOUND)
+            columns = [col[0] for col in cursor.description]
+            current_data = dict(zip(columns, row))
+
+        serializer = self.serializer_class(data={**current_data, 'status': 'C'}, partial=True)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute("CALL modify_reservation(%s, %s, %s)", [
+                        reservation_id,
+                        current_data['trainer_ID'],
+                        data['status']
+                    ])
+                    return Response({'message': 'Reservation cancelled successfully'}, status=status.HTTP_200_OK)
                 except Exception as e:
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
