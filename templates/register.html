@@ -1,9 +1,21 @@
-
+{% extends "base.html" %}
 {% block content %}
-  <h2>Zarejestruj się</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Zarejestruj się</button>
-  </form>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css" />
+<link rel="stylesheet" href="../static/styles/register.css" />
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-half">
+          <form method="post" class="box">
+            <h1 class="title has-text-centered">Zarejestruj się</h1>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="field">
+              <button type="submit" class="button is-success is-fullwidth">Zarejestruj się</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
 {% endblock %}

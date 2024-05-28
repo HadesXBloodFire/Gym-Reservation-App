@@ -12,9 +12,11 @@ import requests
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from rest_framework.permissions import IsAdminUser
 
 
 
+### login/register logic ###
 def anonymous_required(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         user_id = request.COOKIES.get('user_id')
@@ -72,7 +74,10 @@ def logout_view(request):
     response.delete_cookie('user_id')
     return response
 
+###
 
+
+### main ###
 @anonymous_required
 def hero_page(request):
     if request.user.is_authenticated:
@@ -87,6 +92,51 @@ def main_page(request):
         return redirect('login')
     return render(request, "main.html")
 
+###
+
+### creating users ###
+
+class CreateUserAPIView(APIView):
+    serializer_class = UserSerializer
+
+    @swagger_auto_schema(request_body=UserSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute("CALL add_user(%s, %s, %s, %s, %s)", [
+                        data['first_name'],
+                        data['last_name'],
+                        data['mail'],
+                        data['phone_number'],
+                        data['password']
+                    ])
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetUserAPIView(APIView):
+    def get(self, request, user_id):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE user_id = %s", [user_id])
+            row = cursor.fetchone()
+            if row:
+                columns = [col[0] for col in cursor.description]
+                user_data = dict(zip(columns, row))
+                serializer = UserSerializer(user_data)
+                return Response(serializer.data)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+###
+
+
+### reservations ###
 def new_reservation_view(request):
     user_id = request.COOKIES.get('user_id')
     if user_id is None:
@@ -146,28 +196,6 @@ def modify_reservation_view(request):
     form.fields['trainer_ID'].choices = get_trainers()
 
     return render(request, "modify_reservation.html", {'active_reservations': reservations, 'form': form})
-class CreateUserAPIView(APIView):
-    serializer_class = UserSerializer
-
-    @swagger_auto_schema(request_body=UserSerializer)
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            with connection.cursor() as cursor:
-                try:
-                    cursor.execute("CALL add_user(%s, %s, %s, %s, %s)", [
-                        data['first_name'],
-                        data['last_name'],
-                        data['mail'],
-                        data['phone_number'],
-                        data['password']
-                    ])
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
@@ -197,18 +225,6 @@ def cancel_reservation_view(request, reservation_id):
             print(f"API request failed with status code {response.status_code}")
             return JsonResponse(response.json(), status=response.status_code)
     return redirect('modify_reservation')
-class GetUserAPIView(APIView):
-    def get(self, request, user_id):
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM users WHERE user_id = %s", [user_id])
-            row = cursor.fetchone()
-            if row:
-                columns = [col[0] for col in cursor.description]
-                user_data = dict(zip(columns, row))
-                serializer = UserSerializer(user_data)
-                return Response(serializer.data)
-            else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class AddReservationAPIView(APIView):
@@ -311,22 +327,6 @@ class CancelReservationAPIView(APIView):
                 return Response({'error': 'An error occurred: {}'.format(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CheckGymAvailabilityAPIView(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('gym_ID', openapi.IN_QUERY, description="Gym ID", type=openapi.TYPE_INTEGER),
-        openapi.Parameter('date', openapi.IN_QUERY, description="Date and Time", type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)
-    ])
-    def get(self, request, *args, **kwargs):
-        gym_ID = request.query_params.get('gym_ID')
-        date = request.query_params.get('date')
-        if gym_ID and date:
-            with connection.cursor() as cursor:
-                cursor.callproc("check_gym_availability", [gym_ID, date])
-                result = cursor.fetchone()
-                return Response({'available': result[0]})
-        return Response({'error': 'Missing gym_ID or date parameter'}, status=status.HTTP_400_BAD_REQUEST)
-
-
 class CheckTrainerAvailabilityAPIView(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('trainer_ID', openapi.IN_QUERY, description="Trainer ID", type=openapi.TYPE_INTEGER),
@@ -341,6 +341,63 @@ class CheckTrainerAvailabilityAPIView(APIView):
                 result = cursor.fetchone()
                 return Response({'available': result[0]})
         return Response({'error': 'Missing trainer_ID or date parameter'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetReservationsAPIView(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM reservations WHERE user_ID = %s", [user_id])
+            rows = cursor.fetchall()
+            if rows:
+                columns = [col[0] for col in cursor.description]
+                reservations_data = [dict(zip(columns, row)) for row in rows]
+                return Response(reservations_data)
+            else:
+                return Response({'error': 'No reservations found for this user'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AddTrainerAPIView(APIView):
+    serializer_class = TrainerSerializer
+
+    @swagger_auto_schema(request_body=TrainerSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            with connection.cursor() as cursor:
+                try:
+                    cursor.execute("CALL add_trainer(%s, %s, %s, %s, %s)", [
+                        data['first_name'],
+                        data['last_name'],
+                        data['hourly_cost'],
+                        data['specialization'],
+                        data['description']
+                    ])
+                    return Response({'message': 'Trainer added successfully'}, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+###
+
+
+### Gyms ###
+
+class CheckGymAvailabilityAPIView(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('gym_ID', openapi.IN_QUERY, description="Gym ID", type=openapi.TYPE_INTEGER),
+        openapi.Parameter('date', openapi.IN_QUERY, description="Date and Time", type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)
+    ])
+    def get(self, request, *args, **kwargs):
+        gym_ID = request.query_params.get('gym_ID')
+        date = request.query_params.get('date')
+        if gym_ID and date:
+            with connection.cursor() as cursor:
+                cursor.callproc("check_gym_availability", [gym_ID, date])
+                result = cursor.fetchone()
+                return Response({'available': result[0]})
+        return Response({'error': 'Missing gym_ID or date parameter'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GetGymAPIView(APIView):
@@ -379,43 +436,6 @@ class AddGymAPIView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AddTrainerAPIView(APIView):
-    serializer_class = TrainerSerializer
-
-    @swagger_auto_schema(request_body=TrainerSerializer)
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            with connection.cursor() as cursor:
-                try:
-                    cursor.execute("CALL add_trainer(%s, %s, %s, %s, %s)", [
-                        data['first_name'],
-                        data['last_name'],
-                        data['hourly_cost'],
-                        data['specialization'],
-                        data['description']
-                    ])
-                    return Response({'message': 'Trainer added successfully'}, status=status.HTTP_201_CREATED)
-                except Exception as e:
-                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class GetReservationsAPIView(APIView):
-    def get(self, request, user_id, *args, **kwargs):
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM reservations WHERE user_ID = %s", [user_id])
-            rows = cursor.fetchall()
-            if rows:
-                columns = [col[0] for col in cursor.description]
-                reservations_data = [dict(zip(columns, row)) for row in rows]
-                return Response(reservations_data)
-            else:
-                return Response({'error': 'No reservations found for this user'}, status=status.HTTP_404_NOT_FOUND)
-
-
 class GetGymsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         with connection.cursor() as cursor:
@@ -428,4 +448,4 @@ class GetGymsAPIView(APIView):
             else:
                 return Response({'error': 'No gyms found'}, status=status.HTTP_404_NOT_FOUND)
 
-
+###
