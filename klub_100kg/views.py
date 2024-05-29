@@ -30,15 +30,15 @@ def login_view(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             mail = form.cleaned_data['mail']
-            password = form.cleaned_data['password'].encode('utf-8')  # Convert the password to bytes
+            password = form.cleaned_data['password'].encode('utf-8')
             with connection.cursor() as cursor:
                 cursor.execute("SELECT * FROM users WHERE mail = %s", [mail])
                 user = cursor.fetchone()
                 if user is not None:
-                    hashed_password = user[5].encode('utf-8')  # Convert the hashed password to bytes
-                    if bcrypt.checkpw(password, hashed_password):  # Check if the entered password matches the hashed password
+                    hashed_password = user[5].encode('utf-8')
+                    if bcrypt.checkpw(password, hashed_password):
                         response = redirect('main_page')
-                        response.set_cookie('user_id', user[0])  # Set the user_id cookie
+                        response.set_cookie('user_id', user[0])
                         return response
                     else:
                         form.add_error(None, 'Invalid email or password')
@@ -447,5 +447,3 @@ class GetGymsAPIView(APIView):
                 return Response(gyms_data)
             else:
                 return Response({'error': 'No gyms found'}, status=status.HTTP_404_NOT_FOUND)
-
-###
