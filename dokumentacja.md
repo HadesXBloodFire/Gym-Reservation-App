@@ -216,7 +216,7 @@ def new_reservation_view(request):
 </section>
 ```
 
-#TODO: Graficzny przykład dodania rezerwacji
+![Front-endowe wykonanie](images/add_res.png)
 
 ### Read na przykładzie get_gyms:
 ```python
@@ -233,7 +233,8 @@ class ReservationForm(forms.Form):
     --- reszta kodu ---
 ```
 
-#TODO: Graficzny przykład odczytu siłowni
+![Front-endowe wykonanie get_gyms](images/get_gyms.png)
+
 
 ### Update na przykładzie cancel_reservation:
 ```sql
@@ -382,7 +383,7 @@ def modify_reservation_view(request):
 Kod i przykład zaprezentowany w sekcji Create.
 Przy tworeniu i modyfikowaniu rezerwacji uruchamiane są triggery, które zarządzają naszymi zasobami.
 Każda siłownia ma nadany limit osób, które mogą mieć rezerwacje w danym czasie, trenerzy mogą zajmować się tylko jedną osobą w danym czasie.
-Zarówno siłowine jak i trenerzy pracują 24/7.
+Zarówno siłowine jak i trenerzy pracują 24/7. Trenerzy pracują na każdej siłownii.
 
 #### Funkcja do sprawdzania dostępności trenera:
 ```sql
@@ -483,3 +484,5 @@ WHERE
 GROUP BY
     t.trainer_id, t.first_name, t.last_name;
 ```
+
+![Miesięczne zarobki](images/earnings.PNG)
