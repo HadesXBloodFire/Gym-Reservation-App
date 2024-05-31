@@ -218,6 +218,8 @@ def new_reservation_view(request):
 
 ![Front-endowe wykonanie](images/add_res.png)
 
+![Baza danych](images/rezerwcja.PNG)
+
 ### Read na przykładzie get_gyms:
 ```python
 def get_gyms():
@@ -375,7 +377,8 @@ def modify_reservation_view(request):
 </section>
 ```
 
-#TODO: Graficzny przykład anulowania rezerwacji
+![Anulowanie rezerwacji](images/cancel.png)
+
 
 ## Operacja o charakterze transakcyjnym
 ### Przykład transakcji na przykładzie add_reservation:
@@ -464,7 +467,28 @@ $$;
 alter function log_reservation_changes() owner to postgres;
 ```
 
-#TODO: pokazać to graficznie
+#### Trigger sprawdzający czy modyfikowane bądź dodawane rezerwacje nie są w przeszłości:
+```sql
+create function check_reservation_date() returns trigger
+    language plpgsql
+as
+$$
+BEGIN
+    IF NEW.date < CURRENT_DATE THEN
+        RAISE EXCEPTION 'Cannot add or modify a reservation with a date in the past.';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+alter function check_reservation_date() owner to postgres;
+```
+
+
+![Trigger](images/trigger.PNG)
+
+![Wprowadzone zmiany w logach](images/logi.PNG)
+
 
 ## Operacje o charakterze raportującym
 ### Przykład raportu na przykładzie monthly_trainer_earnings:
