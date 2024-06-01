@@ -524,17 +524,17 @@ GROUP BY
 ## Testy zapytań API
 
 ### add_reservation
-![swagger](images/add_reservation_test_swagger.PNG)
-![DB](images/add_reservation_test_output.PNG)
+![swagger](images/add_reservation_test_swagger.png)
+![DB](images/add_reservation_test_output.png)
 
 
 ### cancel_reservation
-![swagger](images/cancel_reservation_test_swagger.PNG)
-![DB](images/cancel_reservation_test_output.PNG)
+![swagger](images/cancel_reservation_test_swagger.png)
+![DB](images/cancel_reservation_test_output.png)
 
 ### get_gyms
-![swagger](images/get_gyms_test_swagger.PNG)
-![DB](images/get_gyms_test_output.PNG)
+![swagger](images/get_gyms_test_swagger.png)
+![DB](images/get_gyms_test_output.png)
 
 
 ## Prezentacja możliwości technologii wykorzystanych w projekcie
