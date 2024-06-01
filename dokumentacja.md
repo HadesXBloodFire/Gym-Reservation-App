@@ -1,10 +1,20 @@
-# Imiona i nazwiska autorów:
-### Maciej Wilewski
-### Dawid Mularczyk
+# Skład grupy
+- Maciej Wilewski, mwilewski@student.agh.edu.pl
+- Dawid Mularczyk, muldaw@student.agh.edu.pl
+
+# Tytuł projektu
+- Klub 100 Kilogram, aplikacja do rezerwacji siłopwnii
+
+# technologie
+- SZBD - PostgreSQL
+- technologia realizacji: Django (Python)
+
+# link do github :)
+- https://github.com/Davsooonowy/Gym-Reservation-App
 
 ## Opis projektu Klub 100 kilo:
-Projekt polega na stworzeniu prostej aplikacji webowej słuzącej do zarządzania treningami na siłowni.
-Użytkownik ma mozliwość zarezerwować daną siłownię z naszej bazy danych oraz renera o ile jedno i druie są dostępne.
+Projekt polega na stworzeniu prostej aplikacji webowej służącej do zarządzania treningami na siłowni.
+Użytkownik ma możliwość zarezerwować daną siłownię z naszej bazy danych oraz trenera o ile jedno i drugie są dostępne.
 
 
 ## Schemat bazy danych i opis tabeli:
@@ -14,14 +24,14 @@ Użytkownik ma mozliwość zarezerwować daną siłownię z naszej bazy danych o
 ### Tabela: Users
 Przechowuje informacje o użytkownikach.
 
-| Kolumna       | Typ         | Opis                        |
-|---------------|-------------|-----------------------------|
-| user_ID       | SERIAL      | Klucz główny                |
-| first_name    | varchar(50) | Imię użytkownika            |
-| last_name     | varchar(50) | Nazwisko użytkownika        |
-| mail          | varchar(100)| Email użytkownika           |
-| phone_number  | int         | Numer telefonu użytkownika  |
-| password      | varchar(100)| Hasło użytkownika           |
+| Kolumna       | Typ         | Opis                                       |
+|---------------|-------------|--------------------------------------------|
+| user_ID       | SERIAL      | Klucz główny                               |
+| first_name    | varchar(50) | Imię użytkownika                           |
+| last_name     | varchar(50) | Nazwisko użytkownika                       |
+| mail          | varchar(100)| Email użytkownika                          |
+| phone_number  | int         | Numer telefonu użytkownika                 |
+| password      | varchar(100)| Hasło użytkownika, przechowywane jako hash |
 
 ### Tabela: Trainers
 Przechowuje informacje o trenerach.
@@ -71,6 +81,7 @@ Przechowuje logi zmian rezerwacji.
 
 
 ## Proste operacje CRUD
+
 ### Create na przykładzie add_reservation:
 ```sql
 create procedure add_reservation(IN p_user_id integer, IN p_gym_id integer, IN p_date timestamp without time zone, IN p_trainer_id integer DEFAULT NULL::integer)
@@ -117,7 +128,6 @@ class AddReservationAPIView(APIView):
                     return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 ```
 
 ```python
