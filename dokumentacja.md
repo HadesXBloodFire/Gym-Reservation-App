@@ -521,6 +521,21 @@ GROUP BY
 
 ![Miesięczne zarobki](images/earnings.PNG)
 
+## Testy zapytań API
+
+### add_reservation
+![swagger](images/add_reservation_test_swagger.PNG)
+![DB](images/add_reservation_test_output.PNG)
+
+
+### cancel_reservation
+![swagger](images/cancel_reservation_test_swagger.PNG)
+![DB](images/cancel_reservation_test_output.PNG)
+
+### get_gyms
+![swagger](images/get_gyms_test_swagger.PNG)
+![DB](images/get_gyms_test_output.PNG)
+
 
 ## Prezentacja możliwości technologii wykorzystanych w projekcie
 
