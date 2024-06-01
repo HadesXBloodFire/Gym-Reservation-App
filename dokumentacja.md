@@ -19,7 +19,7 @@ Użytkownik ma możliwość zarezerwować daną siłownię z naszej bazy danych 
 
 ## Schemat bazy danych i opis tabeli:
 
-![Schemat_bazy](images/diagram_bazy.png)
+![Schemat_bazy](images/diagram_bazy.PNG)
 
 ### Tabela: Users
 Przechowuje informacje o użytkownikach.
