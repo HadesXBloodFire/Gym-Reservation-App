@@ -52,7 +52,8 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-
+    path('api/postgres_views/all_trainer_earnings/', AllTrainerEarningsAPIView.as_view(), name='api_all_trainer_earnings'),
+    path('api/postgres_views/monthly_trainer_earnings/', MonthlyTrainerEarningsAPIView.as_view(), name='api_monthly_trainer_earnings'),
     path("", hero_page, name="hero_page"),
     path("main/", main_page, name="main_page"),
     path("new_reservation/", new_reservation_view, name="new_reservation"),
