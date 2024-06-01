@@ -520,3 +520,27 @@ GROUP BY
 ```
 
 ![Miesięczne zarobki](images/earnings.PNG)
+
+
+## Prezentacja możliwości technologii wykorzystanych w projekcie
+
+- **PostgreSQL**
+  - **Relacyjna baza danych**: PostgreSQL to zaawansowany system zarządzania relacyjnymi bazami danych (RDBMS), który oferuje wsparcie dla złożonych zapytań SQL, transakcji, funkcji, procedur składowanych oraz wyzwalaczy.
+  - **Procedury składowane**: W projekcie zaimplementowano procedury składowane do realizacji operacji na danych, takich jak dodawanie, anulowanie i modyfikacja rezerwacji. Procedury te umożliwiają wykonywanie złożonych operacji w sposób wydajny i bezpieczny bezpośrednio w bazie danych.
+  - **Wyzwalacze**: Triggery są używane do zapewnienia integralności danych oraz automatyzacji działań takich jak logowanie zmian rezerwacji i weryfikacja dostępności zasobów (siłowni i trenerów).
+- **Django**
+  - **Framework webowy**: Django jest jednym z najpopularniejszych frameworków webowych dla Pythona, oferującym zintegrowane narzędzia do tworzenia aplikacji webowych, zarządzania bazą danych, oraz zapewnienia bezpieczeństwa i wydajności.
+  - **Serializery**: W projekcie zastosowano Django Rest Framework Serializers do konwersji złożonych typów danych, takich jak zapytania SQL, na format JSON, co ułatwia przesyłanie danych między serwerem a klientem.
+  - **Bezpośrednie zapytania do bazy danych**: W celu realizacji specyficznych wymagań projektowych, zamiast ORM, wykorzystano bezpośrednie zapytania SQL do bazy danych, co pozwoliło na bardziej precyzyjną kontrolę nad wykonywanymi operacjami oraz optymalizację wydajności.
+- **Bezpiezeństwo i wydajność**
+  - **Transakcje**: Operacje na danych są realizowane w ramach transakcji, co zapewnia ich atomowość i odporność na błędy. W przypadku niepowodzenia operacji, transakcja jest cofana, co zapobiega częściowym aktualizacjom danych.
+  - **Walidacja danych**: Funkcje weryfikacyjne w PostgreSQL, takie jak check_gym_availability i check_trainer_availability, oraz triggery sprawdzające poprawność dat rezerwacji, zapewniają, że dane wprowadzane do bazy są zgodne z regułami biznesowymi aplikacji.
+- **Front-end**
+  - **Formularze**: Użycie formularzy upraszcza walidację danych na poziomie aplikacji i zapewnia spójność z modelem danych. Formularze są wykorzystywane zarówno w operacjach tworzenia, jak i modyfikacji rezerwacji.
+  - **Interfejs użytkownika**: Aplikacja oferuje przejrzysty i intuicyjny interfejs użytkownika do zarządzania rezerwacjami. Front-end komunikuje się z API back-endowym, co umożliwia dynamiczne aktualizacje danych i zapewnia płynność działania aplikacji.
+- **Dlaczego wybraliśmy te technologie i podejścia**:
+  - PostgreSQL został wybrany, ponieważ jest popularnym językiem bazodanowym, szeroko uzywanym w dzisiejszym świecie i uznaliśmy, że to odbra okazja, żeby go poznać.
+  - Django jako framework webowy oferuje zintegrowane narzędzia i biblioteki, które przyspieszają rozwój aplikacji, zapewniają bezpieczeństwo oraz ułatwiają integrację z bazą danych.
+  - Serializery i bezpośrednie zapytania SQL w Django Rest Framework pozwalają na elastyczną manipulację danymi oraz precyzyjną kontrolę nad operacjami wykonywanymi na bazie danych.
+  - Procedury składowane i triggery w PostgreSQL pozwalają na centralizację logiki biznesowej w bazie danych, co zapewnia spójność danych oraz poprawia wydajność poprzez redukcję liczby operacji wymagających komunikacji z bazą.
+  - Architektura klient-serwer i podejście RESTful zwiększają modularność, ułatwiają testowanie i rozwój aplikacji, oraz umożliwiają jej skalowanie.
