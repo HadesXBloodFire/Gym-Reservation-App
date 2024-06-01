@@ -447,3 +447,32 @@ class GetGymsAPIView(APIView):
                 return Response(gyms_data)
             else:
                 return Response({'error': 'No gyms found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AllTrainerEarningsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM all_trainer_earnings
+            """)
+            rows = cursor.fetchall()
+            if rows:
+                columns = [col[0] for col in cursor.description]
+                earnings_data = [dict(zip(columns, row)) for row in rows]
+                return Response(earnings_data)
+            else:
+                return Response({'error': 'No data found'}, status=status.HTTP_404_NOT_FOUND)
+
+class MonthlyTrainerEarningsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM monthly_trainer_earnings
+            """)
+            rows = cursor.fetchall()
+            if rows:
+                columns = [col[0] for col in cursor.description]
+                earnings_data = [dict(zip(columns, row)) for row in rows]
+                return Response(earnings_data)
+            else:
+                return Response({'error': 'No data found'}, status=status.HTTP_404_NOT_FOUND)
