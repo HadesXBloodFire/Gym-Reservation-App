@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="../static/styles/main.css" />
+<style>
+  .short-select {
+    width: 70px;
+    display: inline-block;
+  }
+  .inline-button {
+    display: inline-block;
+    margin-left: 10px;
+  }
+</style>
+<section class="section">
+  <div class="container">
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>Gym</th>
+          <th>Trainer</th>
+          <th>Date and Time</th>
+          <th>Add/Change Trainer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reservation in active_reservations %}
+        <tr>
+          <td>{{ reservation.gym_name }}</td>
+          <td>{{ reservation.trainer_id }}</td>
+          <td>{{ reservation.date }}</td>
+          <td>
+            <form method="post" action="{% url 'update_trainer_reservation' reservation.reservation_id %}">
+                {% csrf_token %}
+                <input type="hidden" name="reservation_id" value="{{ reservation.reservation_id }}">
+              <div class="select is-fullwidth short-select">
+                <select name="trainer_ID">
+                  {% for trainer_id, trainer_name in form.trainer_ID.field.choices %}
+                  <option value="{{ trainer_id }}" {% if trainer_id == reservation.trainer_ID %}selected{% endif %}>{{ trainer_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button class="button is-link inline-button" type="submit" name="update">Update</button>
+            </form>
+            <form method="post" action="{% url 'cancel_reservation' reservation.reservation_id %}">
+              {% csrf_token %}
+              <input type="hidden" name="reservation_id" value="{{ reservation.reservation_id }}">
+              <button class="button is-danger inline-button" type="submit" name="cancel">Cancel Reservation</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

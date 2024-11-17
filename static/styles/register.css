@@ -1,0 +1,11 @@
+.box {
+  margin-top: 2rem;
+}
+
+.box .field {
+  margin-top: 1rem;
+}
+
+.box .button {
+  margin-top: 2rem;
+}

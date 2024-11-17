@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="../static/styles/new_reservation.css" />
+<section class="section">
+  <div class="container">
+      <h2 class="title is-2">Rezerwacja</h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="field">
+          <div class="control">
+            {{ form.user_ID }}
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">{{ form.gym_ID.label }}</label>
+          <div class="control">
+            {{ form.gym_ID }}
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">{{ form.trainer_ID.label }}</label>
+          <div class="control">
+            {{ form.trainer_ID }}
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">{{ form.date.label }}</label>
+          <div class="control">
+            {{ form.date }}
+          </div>
+        </div>
+        <div class="field">
+          <div class="control">
+            <button type="submit" class="button is-primary">Zarezerwuj</button>
+          </div>
+        </div>
+      </form>
+  </div>
+</section>
+{% endblock %}

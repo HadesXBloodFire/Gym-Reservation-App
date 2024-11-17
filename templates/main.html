@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+
+.card {
+  transition: transform 0.2s;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  width: 400px;
+  margin: 20px;
+  background-color: #fff;
+  text-align: center;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card-image {
+  height: 60%;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 20px;
+  height: 40%;
+}
+
+.card:hover .card-image img {
+  opacity: 0.8;
+}
+
+.column {
+  display: flex;
+  justify-content: center;
+}
+
+.section {
+  flex: 1;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: 85%;
+}
+
+.columns {
+  justify-content: center;
+}
+</style>
+<section class="section">
+  <div class="container">
+    <div class="columns is-multiline is-centered">
+      <div class="column is-half">
+        <div class="card" onclick="location.href='{% url 'new_reservation' %}'">
+          <div class="card-image">
+            <img src="https://preview.redd.it/shrek-hitting-the-gym-v0-71qe5idwjryb1.jpg?width=640&crop=smart&auto=webp&s=f8b4a891e322f3dc3197d44d2cfb3d8d2e3750ba" alt="Placeholder image">
+          </div>
+          <div class="card-content">
+            <p class="title">Nowa rezerwacja</p>
+          </div>
+        </div>
+      </div>
+      <div class="column is-half">
+        <div class="card" onclick="location.href='{% url 'modify_reservation' %}'">
+          <div class="card-image">
+            <img src="https://preview.redd.it/shrek-hitting-the-gym-v0-2ux0cidwjryb1.jpg?width=640&crop=smart&auto=webp&s=5a2133453f247ae6950a2ee7e903a8d283514fa1" alt="Placeholder image">
+          </div>
+          <div class="card-content">
+            <p class="title">Modyfikuj rezerwacje</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
